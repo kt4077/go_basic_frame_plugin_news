@@ -4,11 +4,12 @@ import { ElMessage } from 'element-plus'
 import { saveCategory } from '../api/news'
 import { CategoryStatus } from '../enums/news'
 import type { CategoryItem, CategorySaveReq } from '../types/news'
+import { createRandomSlug } from '../utils/slug'
 
 const emit = defineEmits<{ (event: 'success'): void }>()
 const visible = ref(false)
 const saving = ref(false)
-const createForm = (): CategorySaveReq => ({ id: 0, name: '', slug: '', sort: 0, status: CategoryStatus.Enabled, remark: '' })
+const createForm = (): CategorySaveReq => ({ id: 0, name: '', slug: createRandomSlug('category'), sort: 0, status: CategoryStatus.Enabled, remark: '' })
 const form = reactive<CategorySaveReq>(createForm())
 
 const openCreate = () => {
@@ -44,7 +45,10 @@ defineExpose({ openCreate, openEdit })
   <el-dialog v-model="visible" :title="form.id ? '修改分类' : '新增分类'" width="520px" destroy-on-close>
     <el-form label-width="88px">
       <el-form-item label="分类名称" required><el-input v-model="form.name" maxlength="64" /></el-form-item>
-      <el-form-item label="分类标识" required><el-input v-model="form.slug" maxlength="64" placeholder="仅字母和数字，发布后不建议修改" /></el-form-item>
+      <el-form-item label="分类标识" required>
+        <el-input v-model="form.slug" :disabled="form.id > 0" maxlength="64" placeholder="仅支持字母和数字" />
+        <div class="field-tip">{{ form.id ? '标识用于稳定访问，创建后不可修改' : '已自动生成，也可以在保存前修改' }}</div>
+      </el-form-item>
       <el-form-item label="排序"><el-input-number v-model="form.sort" :min="0" :max="999999" /></el-form-item>
       <el-form-item label="状态">
         <el-radio-group v-model="form.status">
@@ -60,3 +64,7 @@ defineExpose({ openCreate, openEdit })
     </template>
   </el-dialog>
 </template>
+
+<style scoped>
+.field-tip { margin-top: 6px; color: var(--el-text-color-secondary); font-size: 12px; line-height: 1.5; }
+</style>

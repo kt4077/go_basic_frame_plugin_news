@@ -32,7 +32,8 @@ func (l *NewsLogic) Categories(c *gin.Context) ([]resp.CategoryItem, error) {
 func (l *NewsLogic) Articles(c *gin.Context, req *param.ArticleListReq) (*resp.ArticleListRes, error) {
 	var total int64
 	var list []resp.ArticleItem
-	db := l.App.DB.WithContext(c.Request.Context()).Model(&model.Article{}).Where("plg_news_article.status = ?", newsEnums.ArticleStatusPublished)
+	db := l.App.DB.WithContext(c.Request.Context()).Model(&model.Article{}).
+		Where("plg_news_article.status = ? AND plg_news_article.enable_status = ?", newsEnums.ArticleStatusPublished, newsEnums.ArticleEnableStatusEnabled)
 	if req.CategorySlug != "" {
 		db = db.Joins("JOIN plg_news_category ON plg_news_category.id = plg_news_article.category_id AND plg_news_category.deleted_at IS NULL").Where("plg_news_category.slug = ? AND plg_news_category.status = ?", req.CategorySlug, newsEnums.CategoryStatusEnabled)
 	}
@@ -56,13 +57,14 @@ func (l *NewsLogic) Articles(c *gin.Context, req *param.ArticleListReq) (*resp.A
 func (l *NewsLogic) Article(c *gin.Context, req *param.ArticleDetailReq) (*resp.ArticleItem, error) {
 	var item resp.ArticleItem
 	err := l.App.DB.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Preload("Category").Where("slug = ? AND status = ?", req.Slug, newsEnums.ArticleStatusPublished).First(&item).Error; err != nil {
+		if err := tx.Preload("Category").Where("slug = ? AND status = ? AND enable_status = ?", req.Slug, newsEnums.ArticleStatusPublished, newsEnums.ArticleEnableStatusEnabled).First(&item).Error; err != nil {
 			return err
 		}
 		if err := tx.Model(&model.Article{}).Where("id = ?", item.ID).UpdateColumn("view_count", gorm.Expr("view_count + 1")).Error; err != nil {
 			return err
 		}
 		item.ViewCount++
+		item.TotalViewCount = item.ViewCount + item.VirtualViewCount
 		return nil
 	})
 	if err != nil {
@@ -88,5 +90,6 @@ func completeCoverURL(application *app.App, item *resp.ArticleItem) error {
 		return err
 	}
 	item.CoverURL = url
+	item.TotalViewCount = item.ViewCount + item.VirtualViewCount
 	return nil
 }

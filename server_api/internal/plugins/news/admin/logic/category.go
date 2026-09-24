@@ -51,7 +51,7 @@ func (l *CategoryLogic) Save(c *gin.Context, req *param.CategorySaveReq) (*resp.
 		if err := tx.First(&current, req.ID).Error; err != nil {
 			return err
 		}
-		return tx.Model(&current).Updates(map[string]interface{}{"name": item.Name, "slug": item.Slug, "sort": item.Sort, "status": item.Status, "remark": item.Remark}).Error
+		return tx.Model(&current).Updates(map[string]interface{}{"name": item.Name, "sort": item.Sort, "status": item.Status, "remark": item.Remark}).Error
 	})
 	if err != nil {
 		if dberror.IsDuplicateKey(err) {

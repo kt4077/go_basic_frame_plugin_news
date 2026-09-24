@@ -2,6 +2,7 @@ package logic
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 	"server_api/pkg/dberror"
 	"server_api/pkg/pagination"
 )
+
+var articleSlugPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 
 // ArticleLogic 新闻文章业务逻辑。
 type ArticleLogic struct{ App *app.App }
@@ -35,6 +38,9 @@ func (l *ArticleLogic) List(c *gin.Context, req *param.ArticleListReq) (*resp.Ar
 	}
 	if req.Status != 0 {
 		db = db.Where("status = ?", req.Status)
+	}
+	if req.EnableStatus != 0 {
+		db = db.Where("enable_status = ?", req.EnableStatus)
 	}
 	if err := db.Count(&total).Error; err != nil {
 		return nil, errors.New("查询文章失败")
@@ -63,6 +69,9 @@ func (l *ArticleLogic) Detail(c *gin.Context, req *param.ArticleIDReq) (*resp.Ar
 
 // Save 新增或修改新闻文章，封面只保存相对路径。
 func (l *ArticleLogic) Save(c *gin.Context, req *param.ArticleSaveReq) (*resp.ArticleItem, error) {
+	if !articleSlugPattern.MatchString(strings.TrimSpace(req.Slug)) {
+		return nil, errors.New("文章标识仅支持字母、数字、中划线和下划线")
+	}
 	resolver, err := commonupload.NewURLResolver(l.App)
 	if err != nil && strings.TrimSpace(req.Cover) != "" {
 		return nil, errors.New("存储配置不可用")
@@ -74,7 +83,7 @@ func (l *ArticleLogic) Save(c *gin.Context, req *param.ArticleSaveReq) (*resp.Ar
 	if err != nil {
 		return nil, err
 	}
-	article := model.Article{CategoryID: req.CategoryID, Title: strings.TrimSpace(req.Title), Slug: strings.ToLower(strings.TrimSpace(req.Slug)), Summary: strings.TrimSpace(req.Summary), Cover: cover, Content: req.Content, Sort: req.Sort, Status: newsEnums.ArticleStatusDraft}
+	article := model.Article{CategoryID: req.CategoryID, Title: strings.TrimSpace(req.Title), Slug: strings.ToLower(strings.TrimSpace(req.Slug)), Summary: strings.TrimSpace(req.Summary), Cover: cover, Content: req.Content, Sort: req.Sort, Status: newsEnums.ArticleStatusDraft, EnableStatus: req.EnableStatus, VirtualViewCount: req.VirtualViewCount}
 	err = l.App.DB.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
 		var categoryCount int64
 		if err := tx.Model(&model.Category{}).Where("id = ?", req.CategoryID).Count(&categoryCount).Error; err != nil {
@@ -90,7 +99,7 @@ func (l *ArticleLogic) Save(c *gin.Context, req *param.ArticleSaveReq) (*resp.Ar
 		if err := tx.First(&current, req.ID).Error; err != nil {
 			return err
 		}
-		return tx.Model(&current).Updates(map[string]interface{}{"category_id": article.CategoryID, "title": article.Title, "slug": article.Slug, "summary": article.Summary, "cover": article.Cover, "content": article.Content, "sort": article.Sort}).Error
+		return tx.Model(&current).Updates(map[string]interface{}{"category_id": article.CategoryID, "title": article.Title, "summary": article.Summary, "cover": article.Cover, "content": article.Content, "sort": article.Sort, "enable_status": article.EnableStatus, "virtual_view_count": article.VirtualViewCount}).Error
 	})
 	if err != nil {
 		if dberror.IsDuplicateKey(err) {
@@ -151,5 +160,6 @@ func completeCoverURL(application *app.App, item *resp.ArticleItem) error {
 		return err
 	}
 	item.CoverURL = url
+	item.TotalViewCount = item.ViewCount + item.VirtualViewCount
 	return nil
 }

@@ -16,3 +16,10 @@ const (
 	// ArticleStatusOffline 表示文章已下线。
 	ArticleStatusOffline = 3
 )
+
+const (
+	// ArticleEnableStatusEnabled 表示文章允许在用户端展示。
+	ArticleEnableStatusEnabled = 1
+	// ArticleEnableStatusDisabled 表示文章不允许在用户端展示。
+	ArticleEnableStatusDisabled = 2
+)

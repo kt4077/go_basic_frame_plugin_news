@@ -11,7 +11,10 @@ import (
 	apiLogic "server_api/internal/plugins/news/api/logic"
 )
 
-const migrationChecksum = "e08ece96f018238258917abc862356d6c30e1c1679e28f5ddd89c19d8dbf5a13"
+const (
+	migrationV100Checksum = "e08ece96f018238258917abc862356d6c30e1c1679e28f5ddd89c19d8dbf5a13"
+	migrationV110Checksum = "092fde34d3ccfbe517eba4ab0abca05e588c7138c75e006b06bd8503de6a4c27"
+)
 
 // Plugin 新闻资讯插件。
 type Plugin struct{}
@@ -21,12 +24,15 @@ func New() *Plugin { return &Plugin{} }
 
 // Manifest 返回插件元信息。
 func (p *Plugin) Manifest() commonplugin.Manifest {
-	return commonplugin.Manifest{PluginID: "news", Name: "新闻资讯", Version: "1.0.0", Logo: "", Author: "kt4077", Homepage: "https://github.com/kt4077/go_basic_frame_plugin_news", Description: "提供新闻分类、文章草稿、发布下线、封面管理以及用户端新闻查询能力。", CoreVersion: commonplugin.CoreVersion, Dependencies: []commonplugin.Dependency{}}
+	return commonplugin.Manifest{PluginID: "news", Name: "新闻资讯", Version: "1.1.3", Logo: "", Author: "kt4077", Homepage: "https://github.com/kt4077/go_basic_frame_plugin_news", Description: "提供新闻分类、文章草稿、发布下线、封面管理以及用户端新闻查询能力。", CoreVersion: commonplugin.CoreVersion, Dependencies: []commonplugin.Dependency{}}
 }
 
 // Migrations 返回插件迁移声明。
 func (p *Plugin) Migrations() []commonplugin.Migration {
-	return []commonplugin.Migration{{Version: "1.0.0", Description: "创建新闻分类与文章表", Checksum: migrationChecksum}}
+	return []commonplugin.Migration{
+		{Version: "1.0.0", Description: "创建新闻分类与文章表", Checksum: migrationV100Checksum},
+		{Version: "1.1.0", Description: "增加文章启用状态与虚拟浏览数量", Checksum: migrationV110Checksum},
+	}
 }
 
 // RegisterAdminRoutes 注册受鉴权和权限校验保护的管理端路由。
