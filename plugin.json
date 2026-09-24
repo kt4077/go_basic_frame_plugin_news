@@ -1,0 +1,30 @@
+{
+  "plugin_id": "news",
+  "name": "新闻资讯",
+  "version": "1.0.0",
+  "core_version": "0.0.2",
+  "logo": "",
+  "author": "kt4077",
+  "homepage": "https://github.com/kt4077/go_basic_frame_plugin_news",
+  "description": "提供新闻分类、文章草稿、发布下线、封面管理以及用户端新闻查询能力。",
+  "dependencies": [],
+  "migrations": [
+    {
+      "version": "1.0.0",
+      "file": "database/migrations/v1.0.0.sql",
+      "checksum": "e08ece96f018238258917abc862356d6c30e1c1679e28f5ddd89c19d8dbf5a13",
+      "description": "创建新闻分类与文章表"
+    }
+  ],
+  "menus": [
+    { "key": "news_manage", "parent_key": "", "name": "新闻资讯", "type": 1, "path": "/plugin/news", "api_path": "", "icon": "Document", "sort": 60, "status": 1, "remark": "新闻资讯插件目录" },
+    { "key": "category_page", "parent_key": "news_manage", "name": "分类管理", "type": 2, "path": "/plugin/news/category", "api_path": "GET:/admin/plugin/news/category/list", "icon": "CollectionTag", "sort": 20, "status": 1, "remark": "新闻分类管理" },
+    { "key": "category_save", "parent_key": "category_page", "name": "保存分类", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/category/save", "icon": "", "sort": 20, "status": 1, "remark": "新增或修改新闻分类" },
+    { "key": "category_delete", "parent_key": "category_page", "name": "删除分类", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/category/delete", "icon": "", "sort": 10, "status": 1, "remark": "删除未被引用的新闻分类" },
+    { "key": "article_page", "parent_key": "news_manage", "name": "文章管理", "type": 2, "path": "/plugin/news/article", "api_path": "GET:/admin/plugin/news/article/list", "icon": "Document", "sort": 10, "status": 1, "remark": "新闻文章管理" },
+    { "key": "article_detail", "parent_key": "article_page", "name": "文章详情", "type": 3, "path": "", "api_path": "GET:/admin/plugin/news/article/detail", "icon": "", "sort": 40, "status": 2, "remark": "读取新闻文章详情" },
+    { "key": "article_save", "parent_key": "article_page", "name": "保存文章", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/save", "icon": "", "sort": 30, "status": 1, "remark": "新增或修改新闻文章" },
+    { "key": "article_status", "parent_key": "article_page", "name": "发布下线", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/status", "icon": "", "sort": 20, "status": 1, "remark": "发布或下线新闻文章" },
+    { "key": "article_delete", "parent_key": "article_page", "name": "删除文章", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/delete", "icon": "", "sort": 10, "status": 1, "remark": "删除新闻文章" }
+  ]
+}
