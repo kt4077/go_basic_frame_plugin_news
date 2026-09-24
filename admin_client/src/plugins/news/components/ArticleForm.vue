@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
+import { nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { ArrowLeft, DocumentChecked } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-import type { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor/editor'
-import '@wangeditor/editor/dist/css/style.css'
 import AvatarUpload from '@/components/AvatarUpload.vue'
-import { uploadFile } from '@/api/upload'
+import RichTextEditor from '@/components/RichTextEditor.vue'
 import { getArticleDetail, saveArticle } from '../api/news'
 import { ArticleEnableStatus } from '../enums/news'
 import type { ArticleSaveReq, CategoryItem } from '../types/news'
@@ -16,7 +13,6 @@ import { createRandomSlug } from '../utils/slug'
 const props = defineProps<{ articleId?: number; categories: CategoryItem[] }>()
 const emit = defineEmits<{ (event: 'success'): void; (event: 'cancel'): void }>()
 const formRef = ref<FormInstance>()
-const editorRef = shallowRef<IDomEditor>()
 const saving = ref(false)
 const loading = ref(false)
 const createForm = (): ArticleSaveReq => ({
@@ -42,19 +38,6 @@ const rules: FormRules<ArticleSaveReq> = {
   ],
   content: [{ required: true, message: '请输入文章正文', trigger: 'change' }],
 }
-const toolbarConfig: Partial<IToolbarConfig> = {}
-const editorConfig: Partial<IEditorConfig> = {
-  placeholder: '请输入文章正文，可插入图片、链接、引用和代码块',
-  MENU_CONF: {
-    uploadImage: {
-      async customUpload(file: File, insertFn: (url: string, alt?: string, href?: string) => void) {
-        const result = await uploadFile(file)
-        insertFn(result.url, result.file_name, result.url)
-      },
-    },
-  },
-}
-
 const loadDetail = async () => {
   Object.assign(form, createForm())
   detailStats.viewCount = 0
@@ -86,7 +69,6 @@ const loadDetail = async () => {
   }
 }
 
-const handleCreated = (editor: IDomEditor) => { editorRef.value = editor }
 const submit = async () => {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
@@ -102,7 +84,6 @@ const submit = async () => {
 
 watch(() => props.articleId, async () => { await nextTick(); await loadDetail() })
 onMounted(loadDetail)
-onBeforeUnmount(() => editorRef.value?.destroy())
 </script>
 
 <template>
@@ -132,10 +113,7 @@ onBeforeUnmount(() => editorRef.value?.destroy())
             <el-input v-model="form.summary" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="用于列表和分享场景的简短介绍" />
           </el-form-item>
           <el-form-item label="文章正文" prop="content">
-            <div class="wang-editor">
-              <Toolbar :editor="editorRef" :default-config="toolbarConfig" mode="default" class="editor-toolbar" />
-              <Editor v-model="form.content" :default-config="editorConfig" mode="default" class="editor-content" @on-created="handleCreated" />
-            </div>
+            <RichTextEditor v-model="form.content" placeholder="请输入文章正文，可插入图片、链接、引用和代码块" :min-height="460" />
           </el-form-item>
         </section>
 
@@ -197,9 +175,6 @@ onBeforeUnmount(() => editorRef.value?.destroy())
 .section-title { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--el-border-color-lighter); }
 .compact-grid { display: grid; grid-template-columns: 1fr 110px; gap: 14px; }
 .compact-grid :deep(.el-input-number), .setting-card :deep(.el-input-number) { width: 100%; }
-.wang-editor { width: 100%; overflow: hidden; border: 1px solid var(--el-border-color); border-radius: 8px; background: var(--el-bg-color); }
-.editor-toolbar { border-bottom: 1px solid var(--el-border-color); }
-.editor-content { min-height: 460px; overflow-y: hidden; }
 .field-tip { margin-top: 7px; color: var(--el-text-color-secondary); font-size: 12px; line-height: 1.5; }
 .view-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 .view-stats div { padding: 12px; border-radius: 8px; background: var(--el-fill-color-light); }

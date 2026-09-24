@@ -41,15 +41,15 @@ plugin.json                         插件清单、迁移与菜单声明
 发行 ZIP 的根目录必须直接包含 `plugin.json`，不能额外嵌套仓库目录：
 
 ```bash
-zip -r go_basic_frame_plugin_news-v1.1.3.zip \
+zip -r go_basic_frame_plugin_news-v1.1.4.zip \
   plugin.json server_api admin_client database README.md CHANGELOG.md docs
 ```
 
 在核心后端目录验证并安装：
 
 ```bash
-go run . plugin validate ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v1.1.3.zip
-go run . plugin upgrade ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v1.1.3.zip \
+go run . plugin validate ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v1.1.4.zip
+go run . plugin upgrade ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v1.1.4.zip \
   --server-root . --admin-root ../admin_client \
   --config ./config.yaml --apply-database
 ```

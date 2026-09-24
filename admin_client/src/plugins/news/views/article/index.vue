@@ -103,8 +103,8 @@ onMounted(async () => { await Promise.all([load(), loadCategories()]) })
 
 <style scoped>
 .toolbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.cover { width: 72px; height: 48px; margin: 0 auto; overflow: hidden; border: 1px solid var(--el-border-color-lighter); border-radius: 8px; background: var(--el-fill-color-light); }
-.cover :deep(img) { cursor: zoom-in; }
-.cover-empty { display: flex; align-items: center; justify-content: center; color: var(--el-text-color-placeholder); font-size: 11px; }
+.cover { width: 72px; height: 48px; margin: 0 auto; }
+.cover :deep(.el-image__inner) { cursor: zoom-in; }
+.cover-empty { display: flex; align-items: center; justify-content: center; border: 1px dashed var(--el-border-color); border-radius: 6px; color: var(--el-text-color-placeholder); font-size: 11px; }
 .summary-text { color: var(--el-text-color-regular); line-height: 1.6; }
 </style>
