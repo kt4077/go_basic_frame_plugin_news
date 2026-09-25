@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Edit, Plus, Search } from '@element-plus/icons-vue'
+import { Delete, Edit, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import AppPagination from '@/components/AppPagination.vue'
 import { formatDateTimeCell } from '@/utils/datetime'
 import CategoryForm from '../../components/CategoryForm.vue'
@@ -26,6 +26,13 @@ const load = async () => {
   }
 }
 
+const reset = () => {
+  query.keyword = ''
+  query.status = undefined
+  query.page = 1
+  load()
+}
+
 const remove = async (row: CategoryItem) => {
   await ElMessageBox.confirm(`确认删除分类「${row.name}」吗？`, '提示', { type: 'warning' })
   await deleteCategory(row.id)
@@ -46,6 +53,7 @@ onMounted(load)
           <el-option v-for="(label, value) in CategoryStatusLabels" :key="value" :label="label" :value="Number(value)" />
         </el-select>
         <el-button :icon="Search" type="primary" @click="query.page = 1; load()">搜索</el-button>
+        <el-button :icon="Refresh" @click="reset">重置</el-button>
       </div>
       <el-button v-perm="'POST:/admin/plugin/news/category/save'" :icon="Plus" type="primary" @click="formRef?.openCreate()">新增分类</el-button>
     </div>

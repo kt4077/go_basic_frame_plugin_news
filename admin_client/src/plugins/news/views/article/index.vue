@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Download, Edit, Plus, Search, Upload } from '@element-plus/icons-vue'
+import { Delete, Download, Edit, Plus, Refresh, Search, Upload } from '@element-plus/icons-vue'
 import AppPagination from '@/components/AppPagination.vue'
 import { formatDateTimeCell } from '@/utils/datetime'
 import ArticleForm from '../../components/ArticleForm.vue'
@@ -29,6 +29,15 @@ const load = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const reset = () => {
+  query.keyword = ''
+  query.category_id = undefined
+  query.status = undefined
+  query.enable_status = undefined
+  query.page = 1
+  load()
 }
 
 const loadCategories = async () => {
@@ -70,6 +79,7 @@ onMounted(async () => { await Promise.all([load(), loadCategories()]) })
         <el-select v-model="query.status" clearable placeholder="状态" style="width: 120px" @change="query.page = 1; load()"><el-option v-for="(label, value) in ArticleStatusLabels" :key="value" :label="label" :value="Number(value)" /></el-select>
         <el-select v-model="query.enable_status" clearable placeholder="启用状态" style="width: 120px" @change="query.page = 1; load()"><el-option v-for="(label, value) in ArticleEnableStatusLabels" :key="value" :label="label" :value="Number(value)" /></el-select>
         <el-button :icon="Search" type="primary" @click="query.page = 1; load()">搜索</el-button>
+        <el-button :icon="Refresh" @click="reset">重置</el-button>
       </div>
       <el-button v-perm="'POST:/admin/plugin/news/article/save'" :icon="Plus" type="primary" @click="openCreate">新增文章</el-button>
     </div>
