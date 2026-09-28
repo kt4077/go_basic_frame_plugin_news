@@ -37,3 +37,8 @@ CREATE TABLE IF NOT EXISTS `plg_news_article` (
   KEY `idx_plg_news_article_published_at` (`published_at`),
   KEY `idx_plg_news_article_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='新闻文章表';
+
+ALTER TABLE `plg_news_article`
+    ADD COLUMN `enable_status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '启用状态，1启用，2禁用' AFTER `status`,
+  ADD COLUMN `virtual_view_count` bigint unsigned NOT NULL DEFAULT '0' COMMENT '虚拟浏览次数' AFTER `view_count`;
+

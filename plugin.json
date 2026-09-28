@@ -1,8 +1,8 @@
 {
   "plugin_id": "news",
   "name": "新闻资讯",
-  "version": "1.1.4",
-  "core_version": "0.0.2",
+  "version": "0.0.1",
+  "core_version": "0.0.1",
   "logo": "",
   "author": "kt4077",
   "homepage": "https://github.com/kt4077/go_basic_frame_plugin_news",
@@ -10,16 +10,10 @@
   "dependencies": [],
   "migrations": [
     {
-      "version": "1.0.0",
-      "file": "database/migrations/v1.0.0.sql",
+      "version": "0.0.1",
+      "file": "database/migrations/0.0.1.sql",
       "checksum": "e08ece96f018238258917abc862356d6c30e1c1679e28f5ddd89c19d8dbf5a13",
       "description": "创建新闻分类与文章表"
-    },
-    {
-      "version": "1.1.0",
-      "file": "database/migrations/v1.1.0.sql",
-      "checksum": "092fde34d3ccfbe517eba4ab0abca05e588c7138c75e006b06bd8503de6a4c27",
-      "description": "增加文章启用状态与虚拟浏览数量"
     }
   ],
   "menus": [
