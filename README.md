@@ -1,6 +1,6 @@
 # 新闻资讯插件
 
-面向 Go Basic Frame `0.0.2` 的官方插件包示例，提供新闻分类、文章草稿、发布/下线、封面上传以及用户端新闻查询能力。
+面向 Go Basic Frame `0.0.1` 的官方插件包示例，提供新闻分类、文章草稿、发布/下线、封面上传以及用户端新闻查询能力。
 
 ## 功能
 
@@ -20,17 +20,15 @@
 server_api/internal/plugins/news/   后端插件源码
 admin_client/src/plugins/news/      管理端插件页面
 database/migrations/                版本化数据库迁移
-docs/API.md                         当前版本接口文档入口
-docs/DATABASE.md                    当前版本数据库说明入口
-docs/api/                           按版本保存的完整接口文档
-docs/database/                      按版本保存的数据库说明
-docs/updates/                       各版本独立更新说明
+docs/api/v0.0.1.md                  完整接口文档
+docs/database/v0.0.1.md             数据库与引用说明
+docs/updates/v0.0.1.md              安装、兼容和更新说明
 plugin.json                         插件清单、迁移与菜单声明
 ```
 
 ## 环境要求
 
-- Go Basic Frame 核心版本：`0.0.2`
+- Go Basic Frame 核心版本：`0.0.1`
 - Go：以宿主项目 `go.mod` 为准
 - Node.js / pnpm：以宿主管理端项目为准
 - 管理端依赖：`@wangeditor/editor`、`@wangeditor/editor-for-vue`
@@ -41,28 +39,30 @@ plugin.json                         插件清单、迁移与菜单声明
 发行 ZIP 的根目录必须直接包含 `plugin.json`，不能额外嵌套仓库目录：
 
 ```bash
-zip -r go_basic_frame_plugin_news-v1.1.4.zip \
+zip -r go_basic_frame_plugin_news-v0.0.1.zip \
   plugin.json server_api admin_client database README.md CHANGELOG.md docs
 ```
 
 在核心后端目录验证并安装：
 
 ```bash
-go run . plugin validate ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v1.1.4.zip
-go run . plugin upgrade ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v1.1.4.zip \
+go run . plugin validate ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v0.0.1.zip
+go run . plugin install ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v0.0.1.zip \
   --server-root . --admin-root ../admin_client \
   --config ./config.yaml --apply-database
 ```
 
-升级前先在宿主管理端执行 `pnpm add @wangeditor/editor @wangeditor/editor-for-vue@next`。升级命令需要按宿主说明增加 `--config ./config.yaml --apply-database` 才会执行 v1.1.0 数据库迁移。安装器会自动重新生成插件注册文件；升级成功后直接构建并重启管理端 API、用户端 API 和管理端前端。只有后续手工修复插件源码或恢复安装前代码时，才需要单独执行 `plugin generate`。
+管理端需要提供 `@wangeditor/editor` 和 `@wangeditor/editor-for-vue` 依赖。安装器会自动重新生成插件注册文件；安装成功后构建并重启管理端 API、用户端 API 和管理端前端。只有后续手工修复插件源码或恢复安装前代码时，才需要单独执行 `plugin generate`。
+
+如果数据库已经安装原 `1.1.0` 至 `1.1.4`，必须先备份数据库、停用插件并重启服务，再使用 `plugin upgrade` 和显式的 `--allow-version-rebase` 参数。安装器会检查原 `1.0.0`、`1.1.0` 迁移均已成功，不重复执行 DDL，并保留业务数据。完整命令见 [v0.0.1 更新说明](./docs/updates/v0.0.1.md)。
 
 ## 接口
 
 管理端接口均位于 `/admin/plugin/news`，由宿主权限中间件保护。公开接口如下：
 
-完整的参数、响应、鉴权、错误场景与调用示例参见 [API 接口文档](./docs/API.md)。
+完整的参数、响应、鉴权、错误场景与调用示例参见 [API 接口文档](./docs/api/v0.0.1.md)。
 
-业务表、内外部引用、文件归属及 Remove/Purge 影响参见 [数据库说明](./docs/DATABASE.md)。
+业务表、内外部引用、文件归属及 Remove/Purge 影响参见 [数据库说明](./docs/database/v0.0.1.md)。
 
 | 方法 | 地址 | 说明 |
 | --- | --- | --- |

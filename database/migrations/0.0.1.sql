@@ -24,8 +24,10 @@ CREATE TABLE IF NOT EXISTS `plg_news_article` (
   `cover` varchar(1024) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '封面相对路径',
   `content` longtext COLLATE utf8mb4_general_ci NOT NULL COMMENT '文章正文',
   `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态，1草稿，2已发布，3已下线',
+  `enable_status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '启用状态，1启用，2禁用',
   `sort` int NOT NULL DEFAULT '0' COMMENT '排序值',
   `view_count` bigint unsigned NOT NULL DEFAULT '0' COMMENT '浏览次数',
+  `virtual_view_count` bigint unsigned NOT NULL DEFAULT '0' COMMENT '虚拟浏览次数',
   `published_at` datetime DEFAULT NULL COMMENT '发布时间',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -37,8 +39,3 @@ CREATE TABLE IF NOT EXISTS `plg_news_article` (
   KEY `idx_plg_news_article_published_at` (`published_at`),
   KEY `idx_plg_news_article_deleted_at` (`deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='新闻文章表';
-
-ALTER TABLE `plg_news_article`
-    ADD COLUMN `enable_status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '启用状态，1启用，2禁用' AFTER `status`,
-  ADD COLUMN `virtual_view_count` bigint unsigned NOT NULL DEFAULT '0' COMMENT '虚拟浏览次数' AFTER `view_count`;
-

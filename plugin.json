@@ -3,6 +3,8 @@
   "name": "新闻资讯",
   "version": "0.0.1",
   "core_version": "0.0.1",
+  "replaces_versions": ["1.1.0", "1.1.1", "1.1.2", "1.1.3", "1.1.4"],
+  "rebase_requires_migrations": ["1.0.0", "1.1.0"],
   "logo": "",
   "author": "kt4077",
   "homepage": "https://github.com/kt4077/go_basic_frame_plugin_news",
@@ -12,8 +14,8 @@
     {
       "version": "0.0.1",
       "file": "database/migrations/0.0.1.sql",
-      "checksum": "e08ece96f018238258917abc862356d6c30e1c1679e28f5ddd89c19d8dbf5a13",
-      "description": "创建新闻分类与文章表"
+      "checksum": "da37268cc9545f2811aac01aedd79dd5b878df6f061bb528d902475b0870ffd3",
+      "description": "创建新闻分类与文章完整基线结构"
     }
   ],
   "menus": [
