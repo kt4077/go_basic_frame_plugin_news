@@ -2,12 +2,14 @@ package logic
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"server_api/internal/common/app"
+	commonmiddleware "server_api/internal/common/middleware"
 	commonupload "server_api/internal/common/upload"
 	"server_api/internal/plugins/news/api/param"
 	"server_api/internal/plugins/news/api/resp"
@@ -18,6 +20,23 @@ import (
 
 // NewsLogic 用户端新闻业务逻辑。
 type NewsLogic struct{ App *app.App }
+
+// Advertisements 返回当前用户端平台、当前新闻展示位置可用的启用广告。
+func (l *NewsLogic) Advertisements(c *gin.Context, req *param.AdvertisementListReq) ([]resp.AdvertisementItem, error) {
+	platform := strconv.Itoa(commonmiddleware.CtxPlatformSource(c))
+	var list []resp.AdvertisementItem
+	err := l.App.DB.WithContext(c.Request.Context()).Table("plg_news_advertisement_config c").
+		Select("a.id,a.name,a.ad_id,a.format,a.description").
+		Joins("JOIN sys_advertisement a ON a.id=c.advertisement_id AND a.deleted_at IS NULL").
+		Joins("JOIN sys_advertisement_plugin ap ON ap.advertisement_id=a.id").
+		Joins("JOIN sys_plugin p ON p.id=ap.plugin_id AND p.plugin_id=? AND p.status=1 AND p.deleted_at IS NULL", "news").
+		Where("c.position=? AND c.status=1 AND a.status=1 AND TRIM(a.ad_id)<>'' AND FIND_IN_SET(?,a.platforms)", req.Position, platform).
+		Order("c.id ASC").Scan(&list).Error
+	if err != nil {
+		return nil, errors.New("查询新闻广告失败")
+	}
+	return list, nil
+}
 
 // Categories 查询启用的新闻分类。
 func (l *NewsLogic) Categories(c *gin.Context) ([]resp.CategoryItem, error) {

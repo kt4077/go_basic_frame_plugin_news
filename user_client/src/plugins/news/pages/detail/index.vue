@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import type { NewsArticle } from '../../types/news'
+import type { NewsAdvertisement, NewsArticle } from '../../types/news'
 import AppEmptyState from '@/composables/components/AppEmptyState.vue'
 import AppPageSkeleton from '@/composables/components/AppPageSkeleton.vue'
 import AppSubPageHeader from '@/composables/components/AppSubPageHeader.vue'
 import { appFeedback } from '@/composables/useAppFeedback'
 import { usePageShare } from '@/composables/usePageShare'
 import { formatDate } from '@/utils/date'
-import { createNewsRequestUID, getNewsArticle, getNewsArticles, getNewsInteractionState, recordNewsShare, toggleNewsArticleCollection, toggleNewsArticleLike } from '../../api/news'
+import { createNewsRequestUID, getNewsAdvertisements, getNewsArticle, getNewsArticles, getNewsInteractionState, recordNewsShare, toggleNewsArticleCollection, toggleNewsArticleLike } from '../../api/news'
 import { tokenStorage } from '@/utils/storage'
 import NewsArticleFooter from '../../components/NewsArticleFooter.vue'
 import NewsCommentSection from '../../components/NewsCommentSection.vue'
 import NewsFeedAd from '../../components/NewsFeedAd.vue'
 import NewsShareSheet from '../../components/NewsShareSheet.vue'
+import NewsPopupAd from '../../components/NewsPopupAd.vue'
 
 interface NewsDetailOptions {
   slug?: string
@@ -38,6 +39,14 @@ const collected = ref(false)
 const collectionSubmitting = ref(false)
 const shareVisible = ref(false)
 const commentSectionRef = ref<InstanceType<typeof NewsCommentSection>>()
+const advertisements = ref<NewsAdvertisement[]>([])
+const feedAdvertisement = computed(() => advertisements.value.find(item => item.format === 1))
+const popupAdvertisement = computed(() => advertisements.value.find(item => item.format === 3))
+
+const loadAdvertisements = async () => {
+  try { return await getNewsAdvertisements(2) }
+  catch { return [] as NewsAdvertisement[] }
+}
 
 usePageShare(() => ({
   title: article.value?.title || '资讯详情',
@@ -71,7 +80,8 @@ const loadArticle = async () => {
   loading.value = true
   errorMessage.value = ''
   try {
-    const result = await getNewsArticle(slug.value)
+    const [result, advertisementList] = await Promise.all([getNewsArticle(slug.value), loadAdvertisements()])
+    advertisements.value = advertisementList
     article.value = result
     commentCount.value = result.comment_count
     if (tokenStorage.get()) {
@@ -213,7 +223,7 @@ onLoad((options?: NewsDetailOptions) => {
           @select="openArticle"
           @open-source="openSource"
         />
-        <NewsFeedAd />
+        <NewsFeedAd v-if="feedAdvertisement" :unit-id="feedAdvertisement.ad_id" :title="feedAdvertisement.name" :description="feedAdvertisement.description" />
         <NewsCommentSection
           ref="commentSectionRef"
           :article-uid="article.uid"
@@ -264,6 +274,7 @@ onLoad((options?: NewsDetailOptions) => {
         :path="`/plugins/news/pages/detail/index?slug=${encodeURIComponent(slug)}`"
         @share="handleShare"
       />
+      <NewsPopupAd v-if="popupAdvertisement" :unit-id="popupAdvertisement.ad_id" />
     </AppPageSkeleton>
   </view>
 </template>

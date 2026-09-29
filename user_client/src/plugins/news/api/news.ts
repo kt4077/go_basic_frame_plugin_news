@@ -3,6 +3,7 @@ import type {
   NewsArticleListParams,
   NewsArticleListResult,
   NewsCategory,
+  NewsAdvertisement,
   NewsCommentListResult,
 } from '../types/news'
 import { request } from '@/utils/request'
@@ -13,6 +14,15 @@ export const getNewsCategories = () =>
   request<NewsCategory[]>({
     url: '/api/plugin/news/categories',
     method: 'GET',
+    auth: false,
+    loading: 'none',
+  })
+
+export const getNewsAdvertisements = (position: 1 | 2) =>
+  request<NewsAdvertisement[]>({
+    url: '/api/plugin/news/advertisements',
+    method: 'GET',
+    data: { position },
     auth: false,
     loading: 'none',
   })

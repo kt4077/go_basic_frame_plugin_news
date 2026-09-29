@@ -1,7 +1,7 @@
 {
   "plugin_id": "news",
   "name": "新闻资讯",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "core_version": "0.0.1",
   "replaces_versions": ["1.1.0", "1.1.1", "1.1.2", "1.1.3", "1.1.4"],
   "rebase_requires_migrations": ["1.0.0", "1.1.0"],
@@ -34,6 +34,18 @@
       "file": "database/migrations/0.1.1.sql",
       "checksum": "f238f98bd859c00f96ae712c52bf88cbc701f331d16c10f8e26bc17af80f069c",
       "description": "增加文章收藏与互动统计排序能力"
+    },
+    {
+      "version": "0.1.2",
+      "file": "database/migrations/0.1.2.sql",
+      "checksum": "fe840845f712730ac9caf4b276dc462bb5b38d3ec2faa65a3a27b570de3361d4",
+      "description": "增加新闻列表与详情广告展示配置"
+    },
+    {
+      "version": "0.1.3",
+      "file": "database/migrations/0.1.3.sql",
+      "checksum": "19091a09a63ac207ca1796c1e9585747274cf3365ee5a00d94105f401b5c4174",
+      "description": "增加新闻广告独立投放状态"
     }
   ],
   "menus": [
@@ -47,6 +59,9 @@
     { "key": "article_status", "parent_key": "article_page", "name": "发布下线", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/status", "icon": "", "sort": 20, "status": 1, "remark": "发布或下线新闻文章" },
     { "key": "article_delete", "parent_key": "article_page", "name": "删除文章", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/delete", "icon": "", "sort": 10, "status": 1, "remark": "删除新闻文章" },
     { "key": "article_comment_list", "parent_key": "article_page", "name": "查看评论", "type": 3, "path": "", "api_path": "GET:/admin/plugin/news/article/comment/list,GET:/admin/plugin/news/article/comment/replies", "icon": "", "sort": 9, "status": 1, "remark": "分页查看文章评论和回复" },
-    { "key": "article_comment_status", "parent_key": "article_page", "name": "评论展示状态", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/comment/status", "icon": "", "sort": 8, "status": 1, "remark": "显示或关闭文章评论" }
+    { "key": "article_comment_status", "parent_key": "article_page", "name": "评论展示状态", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/comment/status", "icon": "", "sort": 8, "status": 1, "remark": "显示或关闭文章评论" },
+    { "key": "advertisement_page", "parent_key": "news_manage", "name": "广告配置", "type": 2, "path": "/plugin/news/advertisement", "api_path": "GET:/admin/plugin/news/advertisement/list,GET:/admin/plugin/news/advertisement/options", "icon": "Promotion", "sort": 5, "status": 1, "remark": "新闻列表与详情广告配置" },
+    { "key": "advertisement_save", "parent_key": "advertisement_page", "name": "保存广告配置", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/advertisement/save", "icon": "", "sort": 20, "status": 1, "remark": "新增或修改新闻广告配置" },
+    { "key": "advertisement_delete", "parent_key": "advertisement_page", "name": "删除广告配置", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/advertisement/delete", "icon": "", "sort": 10, "status": 1, "remark": "删除新闻广告配置" }
   ]
 }

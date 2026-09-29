@@ -5,8 +5,11 @@ import AppPageSkeleton from '@/composables/components/AppPageSkeleton.vue'
 import AppSubPageHeader from '@/composables/components/AppSubPageHeader.vue'
 import { appFeedback } from '@/composables/useAppFeedback'
 import { usePageShare } from '@/composables/usePageShare'
-import { getNewsArticles, getNewsCategories } from '../../api/news'
+import { getNewsAdvertisements, getNewsArticles, getNewsCategories } from '../../api/news'
 import NewsArticleCard from '../../components/NewsArticleCard.vue'
+import NewsFeedAd from '../../components/NewsFeedAd.vue'
+import NewsPopupAd from '../../components/NewsPopupAd.vue'
+import type { NewsAdvertisement } from '../../types/news'
 
 interface NewsPageOptions {
   keyword?: string
@@ -32,6 +35,14 @@ const total = ref(0)
 const loading = ref(true)
 const loadingMore = ref(false)
 const errorMessage = ref('')
+const advertisements = ref<NewsAdvertisement[]>([])
+const feedAdvertisement = computed(() => advertisements.value.find(item => item.format === 1))
+const popupAdvertisement = computed(() => advertisements.value.find(item => item.format === 3))
+
+const loadAdvertisements = async () => {
+  try { return await getNewsAdvertisements(1) }
+  catch { return [] as NewsAdvertisement[] }
+}
 
 const hasMore = computed(() => articles.value.length < total.value)
 const categoryScrollTarget = computed(() => selectedCategory.value ? `category-${selectedCategory.value}` : 'category-all')
@@ -70,11 +81,13 @@ const loadPage = async () => {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [categoryList] = await Promise.all([
+    const [categoryList, advertisementList] = await Promise.all([
       getNewsCategories(),
+      loadAdvertisements(),
       loadArticles(true),
     ])
     categories.value = categoryList
+    advertisements.value = advertisementList
   }
   catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '资讯加载失败'
@@ -202,12 +215,10 @@ onReachBottom(async () => {
         description="换个分类或关键词再看看"
       />
       <view v-else class="article-list">
-        <NewsArticleCard
-          v-for="article in articles"
-          :key="article.uid"
-          :article="article"
-          @select="openArticle"
-        />
+        <template v-for="(article,index) in articles" :key="article.uid">
+          <NewsArticleCard :article="article" @select="openArticle" />
+          <NewsFeedAd v-if="index===0 && feedAdvertisement" :unit-id="feedAdvertisement.ad_id" :title="feedAdvertisement.name" :description="feedAdvertisement.description" />
+        </template>
         <view class="article-list__footer">
           <wd-loading v-if="loadingMore" color="var(--app-primary)" size="18px" />
           <text v-else>
@@ -216,6 +227,7 @@ onReachBottom(async () => {
         </view>
       </view>
     </AppPageSkeleton>
+    <NewsPopupAd v-if="popupAdvertisement" :unit-id="popupAdvertisement.ad_id" />
   </view>
 </template>
 

@@ -58,3 +58,11 @@ export interface NewsArticleListParams {
   page: number
   page_size: number
 }
+
+export interface NewsAdvertisement {
+  id: number
+  name: string
+  ad_id: string
+  format: 1 | 2 | 3
+  description: string
+}

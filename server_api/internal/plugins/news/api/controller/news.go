@@ -11,6 +11,20 @@ import (
 // NewsController 用户端新闻控制器。
 type NewsController struct{ Logic *logic.NewsLogic }
 
+func (h *NewsController) Advertisements(c *gin.Context) {
+	var req param.AdvertisementListReq
+	if err := requestvalidate.Bind(c, &req); err != nil {
+		response.Fail(c, response.CodeErrParams, err.Error())
+		return
+	}
+	result, err := h.Logic.Advertisements(c, &req)
+	if err != nil {
+		response.Fail(c, response.CodeErrBusiness, err.Error())
+		return
+	}
+	response.OK(c, result)
+}
+
 func (h *NewsController) Categories(c *gin.Context) {
 	result, err := h.Logic.Categories(c)
 	if err != nil {

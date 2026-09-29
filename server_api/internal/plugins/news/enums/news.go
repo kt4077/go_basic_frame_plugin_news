@@ -2,6 +2,15 @@
 package enums
 
 const (
+	AdvertisementPositionList   = 1
+	AdvertisementPositionDetail = 2
+)
+
+func IsValidAdvertisementPosition(value int) bool {
+	return value == AdvertisementPositionList || value == AdvertisementPositionDetail
+}
+
+const (
 	// CategoryStatusEnabled 表示分类启用。
 	CategoryStatusEnabled = 1
 	// CategoryStatusDisabled 表示分类停用。

@@ -32,3 +32,7 @@ export interface ArticleCommentItem {
 }
 
 export interface ArticleCommentListReq extends PageQuery { article_uid?:string; root_uid?:string; keyword?:string; status?:number }
+
+export interface AdvertisementOption { id:number; name:string; ad_id:string; format:number; platforms:number[]; status:number; description:string }
+export interface AdvertisementConfig extends AdvertisementOption { advertisement_id:number; position:number; config_status:number }
+export interface AdvertisementSaveReq { id:number; advertisement_id:number; position:number; status:number }

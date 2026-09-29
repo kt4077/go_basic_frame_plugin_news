@@ -1,6 +1,6 @@
 # 新闻资讯插件
 
-面向 Go Basic Frame `0.0.1` 的官方插件包示例，当前插件版本 `0.1.2`，提供新闻分类、文章发布、作者来源、评论、点赞、收藏、分享以及用户端新闻阅读能力。
+面向 Go Basic Frame `0.0.1` 的官方插件包示例，当前插件版本 `0.1.4`，提供新闻分类、文章发布、广告配置、评论、点赞、收藏、分享以及用户端新闻阅读能力。
 
 ## 功能
 
@@ -32,9 +32,9 @@ server_api/internal/plugins/news/   后端插件源码
 admin_client/src/plugins/news/      管理端插件页面
 user_client/src/plugins/news/       用户端 uni-app 插件子包
 database/migrations/                版本化数据库迁移
-docs/api/v0.1.2.md                  当前完整接口文档
-docs/database/v0.1.2.md             当前数据库与引用说明
-docs/updates/v0.1.2.md              当前安装、兼容和更新说明
+docs/api/v0.1.4.md                  当前完整接口文档
+docs/database/v0.1.4.md             当前数据库与引用说明
+docs/updates/v0.1.4.md              当前安装、兼容和更新说明
 plugin.json                         插件清单、迁移与菜单声明
 ```
 
@@ -52,15 +52,15 @@ plugin.json                         插件清单、迁移与菜单声明
 发行 ZIP 的根目录必须直接包含 `plugin.json`，不能额外嵌套仓库目录：
 
 ```bash
-zip -r go_basic_frame_plugin_news-v0.1.2.zip \
+zip -r go_basic_frame_plugin_news-v0.1.4.zip \
   plugin.json server_api admin_client user_client database README.md CHANGELOG.md docs
 ```
 
 在核心后端目录验证并安装：
 
 ```bash
-go run . plugin validate ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v0.1.2.zip
-go run . plugin install ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v0.1.2.zip \
+go run . plugin validate ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v0.1.4.zip
+go run . plugin install ../go_basic_frame_plugin_news/go_basic_frame_plugin_news-v0.1.4.zip \
   --server-root . --admin-root ../admin_client --user-root ../user_client \
   --config ./config.yaml --apply-database
 ```
@@ -81,9 +81,9 @@ VITE_WECHAT_NEWS_FEED_AD_UNIT_ID=adunit-xxxxxxxxxxxxxxxx
 
 管理端接口均位于 `/admin/plugin/news`，由宿主权限中间件保护。公开接口如下：
 
-完整的参数、响应、鉴权、安全限制与调用示例参见 [API 接口文档](./docs/api/v0.1.2.md)。
+完整的参数、响应、鉴权、安全限制与调用示例参见 [API 接口文档](./docs/api/v0.1.4.md)。
 
-业务表、内外部引用、文件归属及 Remove/Purge 影响参见 [数据库说明](./docs/database/v0.1.2.md)。
+业务表、内外部引用、文件归属及 Remove/Purge 影响参见 [数据库说明](./docs/database/v0.1.4.md)。
 
 | 方法 | 地址 | 说明 |
 | --- | --- | --- |
