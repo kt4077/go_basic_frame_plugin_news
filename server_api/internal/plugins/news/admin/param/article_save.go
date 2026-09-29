@@ -7,6 +7,9 @@ type ArticleSaveReq struct {
 	Title            string `json:"title" binding:"required,max=200" validate:"文章标题" comment:"文章标题"`
 	Slug             string `json:"slug" binding:"required,max=128" validate:"文章标识" comment:"文章标识，仅支持字母、数字、中划线和下划线"`
 	Summary          string `json:"summary" binding:"max=500" validate:"文章摘要" comment:"文章摘要"`
+	Author           string `json:"author" binding:"max=100" validate:"文章作者" comment:"文章作者"`
+	SourceName       string `json:"source_name" binding:"max=100" validate:"来源平台名称" comment:"来源平台名称"`
+	SourceURL        string `json:"source_url" binding:"omitempty,max=1024,url" validate:"来源外部链接" comment:"来源外部链接，仅支持HTTP或HTTPS"`
 	Cover            string `json:"cover" binding:"omitempty,max=1024" validate:"封面相对路径" comment:"封面相对路径"`
 	Content          string `json:"content" binding:"required,max=2000000" validate:"文章正文" comment:"文章正文，最多200万字符"`
 	Sort             int    `json:"sort" binding:"min=0" validate:"排序值" comment:"排序值"`

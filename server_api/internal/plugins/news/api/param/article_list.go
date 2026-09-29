@@ -10,5 +10,5 @@ type ArticleListReq struct {
 
 // ArticleDetailReq 用户端新闻文章详情请求。
 type ArticleDetailReq struct {
-	Slug string `uri:"slug" binding:"required,max=128" validate:"文章标识" comment:"文章标识"`
+	Slug string `form:"slug" binding:"required,max=128" validate:"文章标识" comment:"文章标识"`
 }

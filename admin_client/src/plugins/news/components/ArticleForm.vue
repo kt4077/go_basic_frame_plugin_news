@@ -10,7 +10,7 @@ import { ArticleEnableStatus } from '../enums/news'
 import type { ArticleSaveReq, CategoryItem } from '../types/news'
 import { createRandomSlug } from '../utils/slug'
 
-const props = defineProps<{ articleId?: number; categories: CategoryItem[] }>()
+const props = defineProps<{ articleId?: number; sourceArticleId?: number; categories: CategoryItem[] }>()
 const emit = defineEmits<{ (event: 'success'): void; (event: 'cancel'): void }>()
 const formRef = ref<FormInstance>()
 const saving = ref(false)
@@ -21,6 +21,9 @@ const createForm = (): ArticleSaveReq => ({
   title: '',
   slug: createRandomSlug('article'),
   summary: '',
+  author: '',
+  source_name: '',
+  source_url: '',
   cover: '',
   content: '',
   enable_status: ArticleEnableStatus.Enabled,
@@ -36,6 +39,9 @@ const rules: FormRules<ArticleSaveReq> = {
     { required: true, message: '请输入文章标识', trigger: 'blur' },
     { pattern: /^[a-zA-Z0-9][a-zA-Z0-9-_]*$/, message: '仅支持字母、数字、中划线和下划线', trigger: 'blur' },
   ],
+  source_url: [
+    { pattern: /^https?:\/\/[^\s]+$/i, message: '请输入有效的 HTTP/HTTPS 地址', trigger: 'blur' },
+  ],
   content: [{ required: true, message: '请输入文章正文', trigger: 'change' }],
 }
 const loadDetail = async () => {
@@ -43,24 +49,29 @@ const loadDetail = async () => {
   detailStats.viewCount = 0
   detailStats.totalViewCount = 0
   formRef.value?.clearValidate()
-  if (!props.articleId) return
+  const detailId = props.articleId || props.sourceArticleId
+  if (!detailId) return
   loading.value = true
   try {
-    const detail = await getArticleDetail(props.articleId)
+    const detail = await getArticleDetail(detailId)
+    const isReuse = Boolean(props.sourceArticleId && !props.articleId)
     Object.assign(form, {
-      id: detail.id,
+      id: isReuse ? 0 : detail.id,
       category_id: detail.category_id,
-      title: detail.title,
-      slug: detail.slug,
+      title: isReuse ? `${detail.title}（复用）` : detail.title,
+      slug: isReuse ? createRandomSlug('article') : detail.slug,
       summary: detail.summary,
+      author: detail.author,
+      source_name: detail.source_name,
+      source_url: detail.source_url,
       cover: detail.cover_url || detail.cover,
       content: detail.content,
       enable_status: detail.enable_status,
-      virtual_view_count: detail.virtual_view_count,
+      virtual_view_count: isReuse ? 0 : detail.virtual_view_count,
       sort: detail.sort,
     })
-    detailStats.viewCount = detail.view_count
-    detailStats.totalViewCount = detail.total_view_count
+    detailStats.viewCount = isReuse ? 0 : detail.view_count
+    detailStats.totalViewCount = isReuse ? 0 : detail.total_view_count
   } catch (error) {
     emit('cancel')
     throw error
@@ -82,7 +93,7 @@ const submit = async () => {
   }
 }
 
-watch(() => props.articleId, async () => { await nextTick(); await loadDetail() })
+watch(() => [props.articleId, props.sourceArticleId], async () => { await nextTick(); await loadDetail() })
 onMounted(loadDetail)
 </script>
 
@@ -92,8 +103,8 @@ onMounted(loadDetail)
       <div class="header-main">
         <el-button :icon="ArrowLeft" circle plain aria-label="返回文章列表" @click="emit('cancel')" />
         <div>
-          <h4>{{ form.id ? '修改文章' : '新增文章' }}</h4>
-          <p>完善文章内容和展示设置，保存后可在文章列表中发布。</p>
+          <h4>{{ form.id ? '修改文章' : props.sourceArticleId ? '复用资讯' : '新增文章' }}</h4>
+          <p>{{ props.sourceArticleId ? '已复用原资讯内容，并重新生成文章标识；保存后将创建一篇新资讯。' : '完善文章内容和展示设置，保存后可在文章列表中发布。' }}</p>
         </div>
       </div>
       <div class="header-actions">
@@ -111,6 +122,18 @@ onMounted(loadDetail)
           </el-form-item>
           <el-form-item label="文章摘要" prop="summary">
             <el-input v-model="form.summary" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="用于列表和分享场景的简短介绍" />
+          </el-form-item>
+          <div class="source-fields">
+            <el-form-item label="文章作者" prop="author">
+              <el-input v-model="form.author" maxlength="100" show-word-limit placeholder="请输入作者名称" />
+            </el-form-item>
+            <el-form-item label="来源平台" prop="source_name">
+              <el-input v-model="form.source_name" maxlength="100" show-word-limit placeholder="例如：官方网站、新华社" />
+            </el-form-item>
+          </div>
+          <el-form-item label="来源外链" prop="source_url">
+            <el-input v-model="form.source_url" maxlength="1024" placeholder="https://example.com/news/123" />
+            <div class="field-tip">选填，仅支持 HTTP/HTTPS 地址，用户端通过受控网页打开</div>
           </el-form-item>
           <el-form-item label="文章正文" prop="content">
             <RichTextEditor v-model="form.content" placeholder="请输入文章正文，可插入图片、链接、引用和代码块" :min-height="460" />
@@ -174,6 +197,7 @@ onMounted(loadDetail)
 .editor-sidebar { display: flex; grid-column: 1; grid-row: 1; flex-direction: column; gap: 16px; }
 .section-title { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--el-border-color-lighter); }
 .compact-grid { display: grid; grid-template-columns: 1fr 110px; gap: 14px; }
+.source-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .compact-grid :deep(.el-input-number), .setting-card :deep(.el-input-number) { width: 100%; }
 .field-tip { margin-top: 7px; color: var(--el-text-color-secondary); font-size: 12px; line-height: 1.5; }
 .view-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
@@ -182,5 +206,5 @@ onMounted(loadDetail)
 .view-stats span { color: var(--el-text-color-secondary); font-size: 12px; }
 .view-stats strong { margin-top: 5px; font-size: 18px; }
 @media (max-width: 1100px) { .editor-layout { grid-template-columns: 1fr; } .content-card, .editor-sidebar { grid-column: 1; } .content-card { grid-row: 2; } .editor-sidebar { display: grid; grid-row: 1; grid-template-columns: 1fr 1fr; } }
-@media (max-width: 720px) { .editor-header { align-items: flex-start; flex-direction: column; } .header-actions { width: 100%; justify-content: flex-end; } .editor-sidebar { display: flex; } .compact-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .editor-header { align-items: flex-start; flex-direction: column; } .header-actions { width: 100%; justify-content: flex-end; } .editor-sidebar { display: flex; } .compact-grid, .source-fields { grid-template-columns: 1fr; } }
 </style>

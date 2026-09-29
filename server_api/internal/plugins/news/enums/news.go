@@ -9,6 +9,24 @@ const (
 )
 
 const (
+	InteractionStatusActive   = 1
+	InteractionStatusCanceled = 2
+)
+
+const (
+	CommentStatusPending = 1
+	CommentStatusVisible = 2
+	CommentStatusClosed  = 3
+)
+
+const (
+	ShareChannelWechatFriend   = 1
+	ShareChannelWechatTimeline = 2
+	ShareChannelSystem         = 3
+	ShareChannelCopyLink       = 4
+)
+
+const (
 	// ArticleStatusDraft 表示文章草稿。
 	ArticleStatusDraft = 1
 	// ArticleStatusPublished 表示文章已发布。

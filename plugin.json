@@ -1,14 +1,14 @@
 {
   "plugin_id": "news",
   "name": "新闻资讯",
-  "version": "0.0.1",
+  "version": "0.1.2",
   "core_version": "0.0.1",
   "replaces_versions": ["1.1.0", "1.1.1", "1.1.2", "1.1.3", "1.1.4"],
   "rebase_requires_migrations": ["1.0.0", "1.1.0"],
   "logo": "",
   "author": "kt4077",
   "homepage": "https://github.com/kt4077/go_basic_frame_plugin_news",
-  "description": "提供新闻分类、文章草稿、发布下线、封面管理以及用户端新闻查询能力。",
+  "description": "提供新闻分类、文章发布、评论、点赞、收藏、分享以及用户端新闻查询能力。",
   "dependencies": [],
   "migrations": [
     {
@@ -16,6 +16,24 @@
       "file": "database/migrations/0.0.1.sql",
       "checksum": "da37268cc9545f2811aac01aedd79dd5b878df6f061bb528d902475b0870ffd3",
       "description": "创建新闻分类与文章完整基线结构"
+    },
+    {
+      "version": "0.0.2",
+      "file": "database/migrations/0.0.2.sql",
+      "checksum": "cb01d837c81e556821e894e855954a83d398240df459907120744d7879b8d9ae",
+      "description": "增加文章作者、来源平台与来源外链字段"
+    },
+    {
+      "version": "0.1.0",
+      "file": "database/migrations/0.1.0.sql",
+      "checksum": "74834583dd99da27ca555859872b876215638ae54ef2a29c60ace707893edc85",
+      "description": "增加文章业务标识、评论、点赞与分享数据结构"
+    },
+    {
+      "version": "0.1.1",
+      "file": "database/migrations/0.1.1.sql",
+      "checksum": "f238f98bd859c00f96ae712c52bf88cbc701f331d16c10f8e26bc17af80f069c",
+      "description": "增加文章收藏与互动统计排序能力"
     }
   ],
   "menus": [
@@ -27,6 +45,8 @@
     { "key": "article_detail", "parent_key": "article_page", "name": "文章详情", "type": 3, "path": "", "api_path": "GET:/admin/plugin/news/article/detail", "icon": "", "sort": 40, "status": 2, "remark": "读取新闻文章详情" },
     { "key": "article_save", "parent_key": "article_page", "name": "保存文章", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/save", "icon": "", "sort": 30, "status": 1, "remark": "新增或修改新闻文章" },
     { "key": "article_status", "parent_key": "article_page", "name": "发布下线", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/status", "icon": "", "sort": 20, "status": 1, "remark": "发布或下线新闻文章" },
-    { "key": "article_delete", "parent_key": "article_page", "name": "删除文章", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/delete", "icon": "", "sort": 10, "status": 1, "remark": "删除新闻文章" }
+    { "key": "article_delete", "parent_key": "article_page", "name": "删除文章", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/delete", "icon": "", "sort": 10, "status": 1, "remark": "删除新闻文章" },
+    { "key": "article_comment_list", "parent_key": "article_page", "name": "查看评论", "type": 3, "path": "", "api_path": "GET:/admin/plugin/news/article/comment/list,GET:/admin/plugin/news/article/comment/replies", "icon": "", "sort": 9, "status": 1, "remark": "分页查看文章评论和回复" },
+    { "key": "article_comment_status", "parent_key": "article_page", "name": "评论展示状态", "type": 3, "path": "", "api_path": "POST:/admin/plugin/news/article/comment/status", "icon": "", "sort": 8, "status": 1, "remark": "显示或关闭文章评论" }
   ]
 }

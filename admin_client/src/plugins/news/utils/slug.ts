@@ -3,5 +3,14 @@ const randomPart = () => {
   return Array.from(values, value => value.toString(36)).join('')
 }
 
-// createRandomSlug 生成仅包含小写字母和数字的业务标识。
-export const createRandomSlug = (prefix: 'category' | 'article') => `${prefix}${Date.now().toString(36)}${randomPart()}`
+const slugPrefixes = {
+  category: 'c',
+  article: 'n',
+} as const
+
+// createRandomSlug 统一生成短业务标识：1位类型前缀 + 6位时间片 + 4位安全随机值。
+export const createRandomSlug = (type: keyof typeof slugPrefixes) => {
+  const timePart = Date.now().toString(36).slice(-6)
+  const secureRandomPart = randomPart().slice(0, 4)
+  return `${slugPrefixes[type]}${timePart}${secureRandomPart}`
+}

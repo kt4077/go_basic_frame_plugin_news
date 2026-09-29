@@ -2,6 +2,7 @@ package logic
 
 import (
 	"errors"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"server_api/internal/plugins/news/model"
 	"server_api/pkg/dberror"
 	"server_api/pkg/pagination"
+	"server_api/pkg/sn"
 )
 
 var articleSlugPattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
@@ -31,7 +33,7 @@ func (l *ArticleLogic) List(c *gin.Context, req *param.ArticleListReq) (*resp.Ar
 	db := l.App.DB.WithContext(c.Request.Context()).Model(&model.Article{})
 	if keyword := strings.TrimSpace(req.Keyword); keyword != "" {
 		like := "%" + keyword + "%"
-		db = db.Where("title LIKE ? OR slug LIKE ?", like, like)
+		db = db.Where("title LIKE ? OR slug LIKE ? OR author LIKE ? OR source_name LIKE ?", like, like, like, like)
 	}
 	if req.CategoryID != 0 {
 		db = db.Where("category_id = ?", req.CategoryID)
@@ -46,13 +48,61 @@ func (l *ArticleLogic) List(c *gin.Context, req *param.ArticleListReq) (*resp.Ar
 		return nil, errors.New("查询文章失败")
 	}
 	page, size := pagination.Normalize(req.Page, req.PageSize)
-	if err := db.Preload("Category").Order("sort DESC, id DESC").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
+	orderClause := "sort DESC, id DESC"
+	if req.OrderBy != "" {
+		orderField := req.OrderBy
+		if orderField == "total_view_count" {
+			orderField = "(view_count + virtual_view_count)"
+		}
+		if orderField == "comment_count" {
+			orderField = "(SELECT COUNT(*) FROM plg_news_comment AS comment_stats WHERE comment_stats.article_uid = plg_news_article.uid AND comment_stats.status = 2 AND comment_stats.deleted_at IS NULL)"
+		}
+		orderDirection := "DESC"
+		if strings.EqualFold(req.Order, "asc") {
+			orderDirection = "ASC"
+		}
+		orderClause = orderField + " " + orderDirection + ", id DESC"
+	}
+	if err := db.Preload("Category").Order(orderClause).Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
 		return nil, errors.New("查询文章失败")
 	}
 	if err := completeCoverURLs(l.App, list); err != nil {
 		return nil, errors.New("封面地址解析失败")
 	}
+	if err := l.completeArticleCommentCounts(c, list); err != nil {
+		return nil, err
+	}
 	return &resp.ArticleListRes{List: list, Total: total}, nil
+}
+
+// completeArticleCommentCounts 批量统计文章全部层级的已展示评论数。
+func (l *ArticleLogic) completeArticleCommentCounts(c *gin.Context, list []resp.ArticleItem) error {
+	if len(list) == 0 {
+		return nil
+	}
+	uids := make([]string, 0, len(list))
+	for _, item := range list {
+		uids = append(uids, item.UID)
+	}
+	type articleCount struct {
+		ArticleUID string `gorm:"column:article_uid"`
+		Total      uint64 `gorm:"column:total"`
+	}
+	var counts []articleCount
+	if err := l.App.DB.WithContext(c.Request.Context()).Model(&model.Comment{}).
+		Select("article_uid, COUNT(*) AS total").
+		Where("article_uid IN ? AND status = ?", uids, newsEnums.CommentStatusVisible).
+		Group("article_uid").Find(&counts).Error; err != nil {
+		return errors.New("查询文章评论数量失败")
+	}
+	countMap := make(map[string]uint64, len(counts))
+	for _, count := range counts {
+		countMap[count.ArticleUID] = count.Total
+	}
+	for index := range list {
+		list[index].CommentCount = countMap[list[index].UID]
+	}
+	return nil
 }
 
 // Detail 查询新闻文章详情。
@@ -64,6 +114,11 @@ func (l *ArticleLogic) Detail(c *gin.Context, req *param.ArticleIDReq) (*resp.Ar
 	if err := completeCoverURL(l.App, &item); err != nil {
 		return nil, errors.New("封面地址解析失败")
 	}
+	items := []resp.ArticleItem{item}
+	if err := l.completeArticleCommentCounts(c, items); err != nil {
+		return nil, err
+	}
+	item.CommentCount = items[0].CommentCount
 	return &item, nil
 }
 
@@ -71,6 +126,13 @@ func (l *ArticleLogic) Detail(c *gin.Context, req *param.ArticleIDReq) (*resp.Ar
 func (l *ArticleLogic) Save(c *gin.Context, req *param.ArticleSaveReq) (*resp.ArticleItem, error) {
 	if !articleSlugPattern.MatchString(strings.TrimSpace(req.Slug)) {
 		return nil, errors.New("文章标识仅支持字母、数字、中划线和下划线")
+	}
+	sourceURL := strings.TrimSpace(req.SourceURL)
+	if sourceURL != "" {
+		parsedSourceURL, parseErr := url.ParseRequestURI(sourceURL)
+		if parseErr != nil || parsedSourceURL.Host == "" || (parsedSourceURL.Scheme != "http" && parsedSourceURL.Scheme != "https") {
+			return nil, errors.New("来源外部链接仅支持有效的HTTP或HTTPS地址")
+		}
 	}
 	resolver, err := commonupload.NewURLResolver(l.App)
 	if err != nil && strings.TrimSpace(req.Cover) != "" {
@@ -83,7 +145,13 @@ func (l *ArticleLogic) Save(c *gin.Context, req *param.ArticleSaveReq) (*resp.Ar
 	if err != nil {
 		return nil, err
 	}
-	article := model.Article{CategoryID: req.CategoryID, Title: strings.TrimSpace(req.Title), Slug: strings.ToLower(strings.TrimSpace(req.Slug)), Summary: strings.TrimSpace(req.Summary), Cover: cover, Content: req.Content, Sort: req.Sort, Status: newsEnums.ArticleStatusDraft, EnableStatus: req.EnableStatus, VirtualViewCount: req.VirtualViewCount}
+	article := model.Article{CategoryID: req.CategoryID, Title: strings.TrimSpace(req.Title), Slug: strings.ToLower(strings.TrimSpace(req.Slug)), Summary: strings.TrimSpace(req.Summary), Author: strings.TrimSpace(req.Author), SourceName: strings.TrimSpace(req.SourceName), SourceURL: sourceURL, Cover: cover, Content: req.Content, Sort: req.Sort, Status: newsEnums.ArticleStatusDraft, EnableStatus: req.EnableStatus, VirtualViewCount: req.VirtualViewCount}
+	if req.ID == 0 {
+		article.UID, err = sn.Generate()
+		if err != nil {
+			return nil, errors.New("文章标识生成失败")
+		}
+	}
 	err = l.App.DB.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
 		var categoryCount int64
 		if err := tx.Model(&model.Category{}).Where("id = ?", req.CategoryID).Count(&categoryCount).Error; err != nil {
@@ -99,7 +167,7 @@ func (l *ArticleLogic) Save(c *gin.Context, req *param.ArticleSaveReq) (*resp.Ar
 		if err := tx.First(&current, req.ID).Error; err != nil {
 			return err
 		}
-		return tx.Model(&current).Updates(map[string]interface{}{"category_id": article.CategoryID, "title": article.Title, "summary": article.Summary, "cover": article.Cover, "content": article.Content, "sort": article.Sort, "enable_status": article.EnableStatus, "virtual_view_count": article.VirtualViewCount}).Error
+		return tx.Model(&current).Updates(map[string]interface{}{"category_id": article.CategoryID, "title": article.Title, "summary": article.Summary, "author": article.Author, "source_name": article.SourceName, "source_url": article.SourceURL, "cover": article.Cover, "content": article.Content, "sort": article.Sort, "enable_status": article.EnableStatus, "virtual_view_count": article.VirtualViewCount}).Error
 	})
 	if err != nil {
 		if dberror.IsDuplicateKey(err) {
