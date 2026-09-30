@@ -6,6 +6,7 @@ import AppSubPageHeader from '@/composables/components/AppSubPageHeader.vue'
 import { appFeedback } from '@/composables/useAppFeedback'
 import { usePageShare } from '@/composables/usePageShare'
 import { formatDate } from '@/utils/date'
+import { appNavigator } from '@/utils/navigation'
 import { createNewsRequestUID, getNewsAdvertisements, getNewsArticle, getNewsArticles, getNewsInteractionState, recordNewsShare, toggleNewsArticleCollection, toggleNewsArticleLike } from '../../api/news'
 import { tokenStorage } from '@/utils/storage'
 import NewsArticleFooter from '../../components/NewsArticleFooter.vue'
@@ -104,7 +105,7 @@ const openSource = () => {
   if (!sourceURL || !/^https?:\/\//i.test(sourceURL)) {
     return
   }
-  uni.navigateTo({
+  appNavigator.navigateTo({
     url: `/subpackages/webview/index?url=${encodeURIComponent(sourceURL)}`,
   })
 }
@@ -114,7 +115,7 @@ const handlePendingAction = (name: string) => {
 }
 
 const openArticle = (target: NewsArticle) => {
-  uni.redirectTo({
+  appNavigator.redirectTo({
     url: `/plugins/news/pages/detail/index?slug=${encodeURIComponent(target.slug)}`,
   })
 }

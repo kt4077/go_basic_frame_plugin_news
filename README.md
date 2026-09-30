@@ -109,7 +109,8 @@ VITE_WECHAT_NEWS_FEED_AD_UNIT_ID=adunit-xxxxxxxxxxxxxxxx
 - 管理端列表页与新增/修改表单组件分离，表单回填、校验和保存逻辑由独立 `*Form.vue` 维护。
 - 管理端新增依赖必须在 README 中声明，宿主构建前必须完成依赖安装。
 - 用户端插件必须位于 `user_client/src/plugins/{plugin_id}` 独立子包；入口只允许由首页菜单等业务入口跳转，不得加入或修改自定义 TabBar 页面。
-- 用户端页面复用宿主请求、导航、主题、交互和空状态能力，使用 Flexbox，兼容亮色、暗色及声明支持的平台。
+- 用户端页面复用宿主请求、导航、主题、交互和空状态能力；所有页面跳转统一使用宿主 `@/utils/navigation` 的 `appNavigator`，禁止直接调用 `uni.*` 页面跳转 API。
+- 用户端页面使用 Flexbox，兼容亮色、暗色及声明支持的平台。
 - 每次发布必须新增 `docs/updates/v{version}.md`，说明变化、迁移、升级步骤和回滚方式。
 - 每次发布必须新增完整的 `docs/api/v{version}.md` 和 `docs/database/v{version}.md`；即使接口或数据库没有变化，也要明确记录无变化，禁止覆盖历史版本文档。
 

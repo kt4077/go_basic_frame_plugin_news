@@ -10,22 +10,26 @@ import { request } from '@/utils/request'
 import { resolvePlatformSource } from '@/composables/constants/platform'
 import { tokenStorage } from '@/utils/storage'
 
-export const getNewsCategories = () =>
-  request<NewsCategory[]>({
+export const getNewsCategories = async () => {
+  const result = await request<NewsCategory[] | null>({
     url: '/api/plugin/news/categories',
     method: 'GET',
     auth: false,
     loading: 'none',
   })
+  return Array.isArray(result) ? result : []
+}
 
-export const getNewsAdvertisements = (position: 1 | 2) =>
-  request<NewsAdvertisement[]>({
+export const getNewsAdvertisements = async (position: 1 | 2) => {
+  const result = await request<NewsAdvertisement[] | null>({
     url: '/api/plugin/news/advertisements',
     method: 'GET',
     data: { position },
     auth: false,
     loading: 'none',
   })
+  return Array.isArray(result) ? result : []
+}
 
 const normalizeArticleListParams = (params: NewsArticleListParams): NewsArticleListParams => ({
   ...(params.category_slug ? { category_slug: params.category_slug } : {}),
@@ -34,14 +38,19 @@ const normalizeArticleListParams = (params: NewsArticleListParams): NewsArticleL
   page_size: params.page_size,
 })
 
-export const getNewsArticles = (params: NewsArticleListParams) =>
-  request<NewsArticleListResult, NewsArticleListParams>({
+export const getNewsArticles = async (params: NewsArticleListParams) => {
+  const result = await request<NewsArticleListResult, NewsArticleListParams>({
     url: '/api/plugin/news/articles',
     method: 'GET',
     data: normalizeArticleListParams(params),
     auth: false,
     loading: 'none',
   })
+  return {
+    ...result,
+    list: Array.isArray(result.list) ? result.list : [],
+  }
+}
 
 export const getNewsArticle = (slug: string) =>
   request<NewsArticle, { slug: string }>({

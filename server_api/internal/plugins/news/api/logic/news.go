@@ -24,7 +24,7 @@ type NewsLogic struct{ App *app.App }
 // Advertisements 返回当前用户端平台、当前新闻展示位置可用的启用广告。
 func (l *NewsLogic) Advertisements(c *gin.Context, req *param.AdvertisementListReq) ([]resp.AdvertisementItem, error) {
 	platform := strconv.Itoa(commonmiddleware.CtxPlatformSource(c))
-	var list []resp.AdvertisementItem
+	list := make([]resp.AdvertisementItem, 0)
 	err := l.App.DB.WithContext(c.Request.Context()).Table("plg_news_advertisement_config c").
 		Select("a.id,a.name,a.ad_id,a.format,a.description").
 		Joins("JOIN sys_advertisement a ON a.id=c.advertisement_id AND a.deleted_at IS NULL").
@@ -40,7 +40,7 @@ func (l *NewsLogic) Advertisements(c *gin.Context, req *param.AdvertisementListR
 
 // Categories 查询启用的新闻分类。
 func (l *NewsLogic) Categories(c *gin.Context) ([]resp.CategoryItem, error) {
-	var list []resp.CategoryItem
+	list := make([]resp.CategoryItem, 0)
 	if err := l.App.DB.WithContext(c.Request.Context()).Model(&model.Category{}).Where("status = ?", newsEnums.CategoryStatusEnabled).Order("sort DESC,id ASC").Find(&list).Error; err != nil {
 		return nil, errors.New("查询分类失败")
 	}
@@ -50,7 +50,7 @@ func (l *NewsLogic) Categories(c *gin.Context) ([]resp.CategoryItem, error) {
 // Articles 查询已发布新闻，分类条件使用稳定标识。
 func (l *NewsLogic) Articles(c *gin.Context, req *param.ArticleListReq) (*resp.ArticleListRes, error) {
 	var total int64
-	var list []resp.ArticleItem
+	list := make([]resp.ArticleItem, 0)
 	db := l.App.DB.WithContext(c.Request.Context()).Model(&model.Article{}).
 		Where("plg_news_article.status = ? AND plg_news_article.enable_status = ?", newsEnums.ArticleStatusPublished, newsEnums.ArticleEnableStatusEnabled)
 	categorySlug := normalizeOptionalQuery(req.CategorySlug)

@@ -5,6 +5,7 @@ import AppPageSkeleton from '@/composables/components/AppPageSkeleton.vue'
 import AppSubPageHeader from '@/composables/components/AppSubPageHeader.vue'
 import { appFeedback } from '@/composables/useAppFeedback'
 import { usePageShare } from '@/composables/usePageShare'
+import { appNavigator } from '@/utils/navigation'
 import { getNewsAdvertisements, getNewsArticles, getNewsCategories } from '../../api/news'
 import NewsArticleCard from '../../components/NewsArticleCard.vue'
 import NewsFeedAd from '../../components/NewsFeedAd.vue'
@@ -110,7 +111,7 @@ const search = async () => {
 }
 
 const openArticle = (article: NewsArticle) => {
-  uni.navigateTo({
+  appNavigator.navigateTo({
     url: `/plugins/news/pages/detail/index?slug=${encodeURIComponent(article.slug)}`,
   })
 }
