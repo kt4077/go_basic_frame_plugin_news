@@ -5,6 +5,7 @@ import AppPageSkeleton from '@/composables/components/AppPageSkeleton.vue'
 import AppSubPageHeader from '@/composables/components/AppSubPageHeader.vue'
 import { appFeedback } from '@/composables/useAppFeedback'
 import { usePageShare } from '@/composables/usePageShare'
+import { useSubscribeMessage } from '@/composables/useSubscribeMessage'
 import { formatDate } from '@/utils/date'
 import { appNavigator } from '@/utils/navigation'
 import { createNewsRequestUID, getNewsAdvertisements, getNewsArticle, getNewsArticles, getNewsInteractionState, recordNewsShare, toggleNewsArticleCollection, toggleNewsArticleLike } from '../../api/news'
@@ -43,6 +44,14 @@ const commentSectionRef = ref<InstanceType<typeof NewsCommentSection>>()
 const advertisements = ref<NewsAdvertisement[]>([])
 const feedAdvertisement = computed(() => advertisements.value.find(item => item.format === 1))
 const popupAdvertisement = computed(() => advertisements.value.find(item => item.format === 3))
+
+/** 资讯动态订阅模板编码，对应管理端「消息中心-消息模板」的配置 */
+const NEWS_SUBSCRIBE_TEMPLATE_CODE = 'a6T91S6ZxuiIejRTPUXJlRSToAfquEFPxlXjzDFra5E'
+const { requestMessageSubscribe } = useSubscribeMessage()
+
+const handleSubscribe = async () => {
+  await requestMessageSubscribe([NEWS_SUBSCRIBE_TEMPLATE_CODE])
+}
 
 const loadAdvertisements = async () => {
   try { return await getNewsAdvertisements(2) }
@@ -108,10 +117,6 @@ const openSource = () => {
   appNavigator.navigateTo({
     url: `/subpackages/webview/index?url=${encodeURIComponent(sourceURL)}`,
   })
-}
-
-const handlePendingAction = (name: string) => {
-  appFeedback.info(`${name}功能即将开放`)
 }
 
 const openArticle = (target: NewsArticle) => {
@@ -245,8 +250,8 @@ onLoad((options?: NewsDetailOptions) => {
               {{ article.author || '官方发布' }}
             </text>
           </view>
-          <view class="detail-actions__follow" @click.stop="handlePendingAction('关注')">
-            + 关注
+          <view class="detail-actions__follow" @click.stop="handleSubscribe">
+            + 订阅
           </view>
         </view>
         <view class="detail-actions__buttons">
